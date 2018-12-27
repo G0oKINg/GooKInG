@@ -1,0 +1,75 @@
+1、启动springboot环境入口
+com.micro.spring.cloud.weather.MicroWeatherEurekaClientFeignApplication#main
+org.springframework.boot.SpringApplication#run(java.lang.Class<?>, java.lang.String...)
+
+2、初始化springApplication类
+org.springframework.boot.SpringApplication
+
+2.1、判断启动的应用是否为web应用,判断方式（通过反射加载 "javax.servlet.Servlet",
+			"org.springframework.web.context.ConfigurableWebApplicationContext"这两个类，如果都能加载则为返回为则为web类）
+org.springframework.boot.SpringApplication#deduceWebApplicationType
+
+
+
+2.2.1、通过ClassLoader.getResources加载META-INF/spring.factories路径下的文件信息，从中找key为ApplicationContextInitializer.class并实例化。 
+org.springframework.boot.SpringApplication#getSpringFactoriesInstances(java.lang.Class<T>)
+
+2.2.1.1、通过该方法找到所有META-INF/spring.factories路径下的文件信息,并返回（Enumeration<URL> urls = (classLoader != null ?classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :	ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));）
+org.springframework.core.io.support.SpringFactoriesLoader#loadSpringFactories
+
+2.2.1.2、通过此方法返回所有key为ApplicationContextInitializer.class的类的名称，factoryClass为ApplicationContextInitializer.class类
+public static List<String> loadFactoryNames(Class<?> factoryClass, @Nullable ClassLoader classLoader) {
+		String factoryClassName = factoryClass.getName();
+		return loadSpringFactories(classLoader).getOrDefault(factoryClassName, Collections.emptyList());
+	}
+
+2.2.2.1、通过反射加载2.2.1.2获取到的类的名称进行实例化存入集合，并返回该集合
+org.springframework.boot.SpringApplication#createSpringFactoriesInstances
+
+2.2、将2.2.1——2.2.2.1一系列操作获取到的所有实例存入集合当中，入参（initializers）为所有key为ApplicationContextInitializer.class的实例集合
+public void setInitializers(
+			Collection<? extends ApplicationContextInitializer<?>> initializers) {
+		this.initializers = new ArrayList<>();
+		this.initializers.addAll(initializers);
+	}
+org.springframework.boot.SpringApplication#setInitializers
+
+2.3.1、重新执行以上2.2.1——2.2.1.2之间的所有操作，获取key为ApplicationListener.class的实例集合
+2.3、将2.3.1获取到的所有实例集合存入集合当中，入参（listeners）为所有key为ApplicationListener.class的实例集合
+public void setListeners(Collection<? extends ApplicationListener<?>> listeners) {
+		this.listeners = new ArrayList<>();
+		this.listeners.addAll(listeners);
+	}
+org.springframework.boot.SpringApplication#setListeners
+
+2.4、在deduceMainApplicationClass方法中，通过获取当前调用栈，找到入口方法main所在的类，并将其赋值给SpringApplication对象的成员变量mainApplicationClass。在我们的例子中mainApplicationClass即是我们自己编写的Application类。
+org.springframework.boot.SpringApplication#deduceMainApplicationClass
+
+
+以上，springbootApplication初始化完成
+org.springframework.boot.SpringApplication#run(java.lang.String...)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
